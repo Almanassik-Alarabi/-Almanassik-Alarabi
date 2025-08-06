@@ -108,6 +108,11 @@ async function fetchOfferDetails() {
                     <p>${t.passportImage || 'صورة جواز السفر'} :</p>
                         <input type="file" id="passport-image-input" accept="image/*" placeholder="${t.passportImage || 'صورة جواز السفر'}" required style="width:100%;margin-bottom:10px;">
                     </div>
+                    <div id="captcha-box" style="margin:10px 0;">
+                        <label id="captcha-label" style="font-weight:bold;color:#1976d2;"></label>
+                        <input type="text" id="captcha-input" placeholder="أدخل الناتج" required style="width:100%;margin-bottom:10px;padding:8px;border-radius:6px;border:1px solid #ccc;">
+                        <div id="captcha-error" style="color:red;font-size:0.95em;"></div>
+                    </div>
                     <button type="submit" class="cta-button" style="width:100%;margin-top:10px;">${t.confirmBooking || 'تأكيد طلب الحجز'}</button>
                     <div id="form-total-price" style="margin-top:10px;font-size:1.2em;color:#2d5a2d;"></div>
                 </form>
@@ -153,6 +158,8 @@ async function fetchOfferDetails() {
                 }
             });
         }, 100);
+        // تفعيل التفاعلات مباشرة بعد بناء التفاصيل
+        setupOfferInteractions();
         } catch (e) {
             document.getElementById('dynamic-offer-details').innerHTML = '<div style="color:red">حدث خطأ أثناء جلب التفاصيل: ' + e.message + '</div>';
             console.error('Fetch offer details error:', e);
@@ -225,8 +232,33 @@ function setupOfferInteractions() {
     const bookingForm = document.getElementById('booking-form');
     const bookingResult = document.getElementById('booking-result');
     const passportInput = document.getElementById('passport-image-input');
+    // كابتشا حسابية بسيطة
+    let captchaA = 0, captchaB = 0, captchaAnswer = 0;
+    function generateCaptcha() {
+        captchaA = Math.floor(Math.random() * 9) + 1;
+        captchaB = Math.floor(Math.random() * 9) + 1;
+        captchaAnswer = captchaA + captchaB;
+        const captchaLabel = document.getElementById('captcha-label');
+        if (captchaLabel) captchaLabel.textContent = `كم حاصل جمع ${captchaA} + ${captchaB}؟`;
+        const captchaInput = document.getElementById('captcha-input');
+        if (captchaInput) captchaInput.value = '';
+        const captchaError = document.getElementById('captcha-error');
+        if (captchaError) captchaError.textContent = '';
+    }
+    generateCaptcha();
+
     bookingForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        const captchaInput = document.getElementById('captcha-input');
+        const captchaError = document.getElementById('captcha-error');
+        if (!captchaInput || captchaInput.value.trim() === '' || parseInt(captchaInput.value, 10) !== captchaAnswer) {
+            if (captchaError) captchaError.textContent = 'يرجى حل العملية الحسابية بشكل صحيح للتحقق.';
+            generateCaptcha();
+            captchaInput && captchaInput.focus();
+            return;
+        } else {
+            if (captchaError) captchaError.textContent = '';
+        }
         bookingResult.textContent = 'جاري إرسال الحجز...';
         const full_name = bookingForm.full_name.value;
         const phone = bookingForm.phone.value;
@@ -269,6 +301,7 @@ function setupOfferInteractions() {
                 message += '</div>';
                 bookingResult.innerHTML = message;
                 bookingForm.reset();
+                generateCaptcha();
                 // تجهيز كائن الحجز بكافة الحقول المطلوبة
                 const booking = result.booking;
                 booking.offer_title = offer.title;
@@ -336,10 +369,7 @@ function injectDynamicStyles() {
 injectDynamicStyles();
 
 // بعد جلب التفاصيل، فعل التفاعلات
-window.addEventListener('DOMContentLoaded', () => {
-    // ننتظر قليلاً حتى يتم تحميل التفاصيل
-    setTimeout(setupOfferInteractions, 700);
-});
+// لم يعد هناك حاجة لاستدعاء setupOfferInteractions هنا لأننا نفعلها بعد بناء التفاصيل
 
 if (window.setLanguage) {
     const origSetLanguage = window.setLanguage;
