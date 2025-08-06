@@ -138,6 +138,8 @@
                                                     <label for="acceptPolicy" style="font-size:15px;color:var(--primary-dark);margin:0;">أوافق على سياسة الشروط والخصوصية</label>
                                                 </div>
                                             </div>
+                                            <!-- كباتشا لمنع التسجيلات الوهمية -->
+                                            <div id="captchaContainer" style="margin:12px 0 0 0;"></div>
                                             <button type="submit" class="btn mt-4">إنشاء حساب</button>
                                             <div>
                                                 <span style="font-size:19px;color:#666; margin-left: 0px;">
@@ -195,10 +197,13 @@
  <script>
   
     </script>
+    <script src="js/simple-captcha.js"></script>
     <script src="js/login.js"></script>
     <script>
     // تغيير مظهر زر التبديل بين تسجيل الدخول وإنشاء حساب
     document.addEventListener('DOMContentLoaded', function() {
+        // كباتشا التسجيل
+        createSimpleCaptcha('captchaContainer', 'captchaInput', 'ar');
         // ...existing code...
         const cardWrap = document.querySelector('.card-3d-wrap');
         const toggleToRegisterBtn = document.getElementById('toggleToRegisterBtn');

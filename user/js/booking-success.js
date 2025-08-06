@@ -236,7 +236,7 @@
                         .print-label { color: #555; font-weight: bold; display: inline-block; min-width: 110px; }
                         .print-value { color: #222; font-weight: bold; }
                         .print-row { margin-bottom: 8px; font-size: 1.1em; }
-                        .print-logo { display: block; margin: 0 auto 18px auto; max-width: 120px; }
+                        .print-logo { display: block; margin: 0 auto 18px auto; max-width: 120px; border-radius: 50%; box-shadow: 0 2px 8px #ccc; }
                         .print-check { color: #43a047; font-size: 2.5em; text-align: center; margin-bottom: 10px; }
                         .print-footer { text-align: center; color: #888; font-size: 1em; margin-top: 30px; }
                         .print-passport { display: block; margin: 18px auto 0 auto; max-width: 180px; border-radius: 10px; box-shadow: 0 2px 8px #ccc; }
@@ -244,7 +244,7 @@
                 </head>
                 <body>
                     <div class='print-container'>
-                        <div class='print-check'>✓</div>
+                        <img src='img/images.jpeg' class='print-logo' alt='Logo' style='width: 100px; height: 100px;'>
                         <div class='print-title'>استمارة طلب الحجز</div>
                         ${discountHtml}
                         <div class='print-section'>

@@ -215,6 +215,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            // تحقق من الكباتشا
+            if (typeof validateSimpleCaptcha === 'function' && !validateSimpleCaptcha('captchaContainer', 'captchaInput')) {
+                showToast('يرجى حل سؤال التحقق بشكل صحيح.', 'error');
+                if (typeof createSimpleCaptcha === 'function') createSimpleCaptcha('captchaContainer', 'captchaInput', 'ar');
+                return;
+            }
             registerMessage.textContent = '';
             // جلب جميع الحقول المطلوبة
             const name = document.getElementById('registerName').value.trim();

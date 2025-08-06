@@ -178,10 +178,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- أيقونات الخدمات المتاحة ---
   const SERVICE_ICONS = [
-    { key: "visa",    label: "التأشيرة", icon: "🛂" },
-    { key: "guide",   label: "الإرشاد", icon: "🧑‍�" },
-    { key: "meals",   label: "الإطعام", icon: "�️" },
-    { key: "transport", label: "النقل", icon: "🚌" },
+    { key: 'التأشيرة', icon: 'fa-passport', color: '#176a3d' },
+    { key: 'الإرشاد', icon: 'fa-user-tie', color: '#34495e' },
+    { key: 'الإطعام', icon: 'fa-utensils', color: '#f7ca18' },
+    { key: 'النقل', icon: 'fa-bus', color: '#1e824c' },
   ];
 
   // --- إدراج أيقونات الخدمات في نموذج إضافة عرض ---
@@ -263,13 +263,7 @@ async function loadAndRenderOffers() {
   }
 }
 
-// --- أيقونات الخدمات المتاحة ---
-const SERVICE_ICONS = [
-  { key: "visa",    label: "التأشيرة", icon: "🛂" },
-  { key: "guide",   label: "الإرشاد", icon: "🧑‍�" },
-  { key: "meals",   label: "الإطعام", icon: "�️" },
-  { key: "transport", label: "النقل", icon: "🚌" },
-];
+// ...existing code...
 
 // --- إدراج أيقونات الخدمات في نموذج إضافة عرض (تفاعلية وجميلة) ---
 document.addEventListener("DOMContentLoaded", function () {
@@ -277,9 +271,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const servicesInput = document.getElementById("servicesInput");
   if (servicesIconsContainer && servicesInput) {
     servicesIconsContainer.innerHTML = SERVICE_ICONS.map(s =>
-      `<div class="service-icon-select" data-key="${s.key}" title="${s.label}">
-        <span class="icon">${s.icon}</span>
-        <span class="label">${s.label}</span>
+      `<div class="service-icon-select" data-key="${s.key}" title="${s.key}" style="color:${s.color}">
+        <span class="icon"><i class="fa-solid ${s.icon}" style="color:${s.color};font-size:2em;"></i></span>
+        <span class="label">${s.key}</span>
       </div>`
     ).join("");
     servicesIconsContainer.querySelectorAll(".service-icon-select").forEach(el => {
@@ -772,21 +766,24 @@ function getServiceIcons(services) {
     }
   }
   const icons = {
-    visa:    '<span title="التأشيرة" style="margin-left:4px;font-size:1.2em;">🛂</span>',
-    guide:   '<span title="الإرشاد" style="margin-left:4px;font-size:1.2em;">🧑‍�</span>',
-    meals:   '<span title="الإطعام" style="margin-left:4px;font-size:1.2em;">�️</span>',
-    transport: '<span title="النقل" style="margin-left:4px;font-size:1.2em;">🚌</span>',
+    'التأشيرة': '<span title="التأشيرة" style="margin-left:4px;"><i class="fa-solid fa-passport" style="color:#176a3d;font-size:1.5em;"></i></span>',
+    'الإرشاد': '<span title="الإرشاد" style="margin-left:4px;"><i class="fa-solid fa-user-tie" style="color:#34495e;font-size:1.5em;"></i></span>',
+    'الإطعام': '<span title="الإطعام" style="margin-left:4px;"><i class="fa-solid fa-utensils" style="color:#f7ca18;font-size:1.5em;"></i></span>',
+    'النقل': '<span title="النقل" style="margin-left:4px;"><i class="fa-solid fa-bus" style="color:#1e824c;font-size:1.5em;"></i></span>',
   };
   const keyMap = {
-    visa: "visa",
-    تأشيرة: "visa",
-    guide: "guide",
-    ارشاد: "guide",
-    meals: "meals",
-    اطعام: "meals",
-    فطور: "meals",
-    transport: "transport",
-    نقل: "transport",
+    'التأشيرة': 'التأشيرة',
+    'visa': 'التأشيرة',
+    'الإرشاد': 'الإرشاد',
+    'guide': 'الإرشاد',
+    'ارشاد': 'الإرشاد',
+    'الإطعام': 'الإطعام',
+    'meals': 'الإطعام',
+    'اطعام': 'الإطعام',
+    'فطور': 'الإطعام',
+    'النقل': 'النقل',
+    'transport': 'النقل',
+    'مواصلات': 'النقل',
   };
   return Object.keys(services)
     .filter((k) => services[k])

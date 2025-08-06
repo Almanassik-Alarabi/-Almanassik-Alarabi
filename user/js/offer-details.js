@@ -105,10 +105,10 @@ async function fetchOfferDetails() {
                     <input type="text" name="phone" placeholder="${t.phone || 'رقم الهاتف'}" required style="width:100%;margin-bottom:10px;padding:8px;border-radius:6px;border:1px solid #ccc;">
 
                     <div id="passport-image-preview" style="margin-top:10px;">
-                    <p>${t.passportImage || 'صورة جواز السفر'} :</p>
+                        <p>${t.passportImage || 'صورة جواز السفر'} :</p>
                         <input type="file" id="passport-image-input" accept="image/*" placeholder="${t.passportImage || 'صورة جواز السفر'}" required style="width:100%;margin-bottom:10px;">
                     </div>
-                    <button type="submit" class="cta-button" style="width:100%;margin-top:10px;">${t.confirmBooking || 'تأكيد طلب الحجز'}</button>
+                    <button type="submit" class="cta-button" style="width:100%;margin-top:10px;">${t.confirmBooking || 'تأكيد الحجز'}</button>
                     <div id="form-total-price" style="margin-top:10px;font-size:1.2em;color:#2d5a2d;"></div>
                 </form>
                 <div id="booking-result" style="margin-top:15px;"></div>
@@ -118,41 +118,6 @@ async function fetchOfferDetails() {
                 <p style="font-size: 0.9em; margin-top: 10px;">${t.ayahRef || 'سورة الحج - آية 27'}</p>
             </div>
         `; // إغلاق القالب النصي هنا بشكل صحيح
-        // إضافة منطق تكبير الصورة بعد تحميل التفاصيل
-        setTimeout(() => {
-            const img = document.getElementById('offer-main-image');
-            if (!img) return;
-            let zoomed = false;
-            img.addEventListener('click', function() {
-                if (!zoomed) {
-                    img.style.position = 'fixed';
-                    img.style.top = '50%';
-                    img.style.left = '50%';
-                    img.style.transform = 'translate(-50%, -50%) scale(1.2)';
-                    img.style.zIndex = '9999';
-                    img.style.boxShadow = '0 0 40px #0008';
-                    img.style.maxWidth = '90vw';
-                    img.style.maxHeight = '90vh';
-                    img.style.cursor = 'zoom-out';
-                    img.style.background = '#fff';
-                    document.body.style.overflow = 'hidden';
-                    zoomed = true;
-                } else {
-                    img.style.position = '';
-                    img.style.top = '';
-                    img.style.left = '';
-                    img.style.transform = '';
-                    img.style.zIndex = '';
-                    img.style.boxShadow = '';
-                    img.style.maxWidth = '';
-                    img.style.maxHeight = '';
-                    img.style.cursor = 'zoom-in';
-                    img.style.background = '';
-                    document.body.style.overflow = '';
-                    zoomed = false;
-                }
-            });
-        }, 100);
         } catch (e) {
             document.getElementById('dynamic-offer-details').innerHTML = '<div style="color:red">حدث خطأ أثناء جلب التفاصيل: ' + e.message + '</div>';
             console.error('Fetch offer details error:', e);
@@ -227,6 +192,22 @@ function setupOfferInteractions() {
     const passportInput = document.getElementById('passport-image-input');
     bookingForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        // تحقق من الكابتشا
+        const captchaDiv = document.getElementById('simple-captcha-container');
+        const captchaInput = document.getElementById('simple-captcha-answer');
+        const captchaError = document.getElementById('captcha-error');
+        if (captchaDiv && captchaInput) {
+            const correct = captchaDiv.dataset.captchaAnswer;
+            if (captchaInput.value.trim() !== correct) {
+                captchaError.textContent = 'الإجابة غير صحيحة. حاول مرة أخرى.';
+                captchaError.style.display = 'inline';
+                captchaInput.focus();
+                return;
+            } else {
+                captchaError.textContent = '';
+                captchaError.style.display = 'none';
+            }
+        }
         bookingResult.textContent = 'جاري إرسال الحجز...';
         const full_name = bookingForm.full_name.value;
         const phone = bookingForm.phone.value;
@@ -269,6 +250,19 @@ function setupOfferInteractions() {
                 message += '</div>';
                 bookingResult.innerHTML = message;
                 bookingForm.reset();
+                // إعادة توليد كابتشا جديدة بعد نجاح الحجز
+                setTimeout(() => {
+                    if (captchaDiv) {
+                        captchaDiv.innerHTML = '';
+                        const a = Math.floor(Math.random() * 10) + 1;
+                        const b = Math.floor(Math.random() * 10) + 1;
+                        captchaDiv.innerHTML =
+                          '<span style="font-weight:bold;">' + a + ' + ' + b + ' = </span>' +
+                          '<input type="number" id="simple-captcha-answer" style="margin:0 8px;width:60px;text-align:center;" required placeholder="؟">' +
+                          '<span id="captcha-error" style="color:red;font-size:0.9em;display:none;margin-right:8px;"></span>';
+                        captchaDiv.dataset.captchaAnswer = (a + b).toString();
+                    }
+                }, 500);
                 // تجهيز كائن الحجز بكافة الحقول المطلوبة
                 const booking = result.booking;
                 booking.offer_title = offer.title;

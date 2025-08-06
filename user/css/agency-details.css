@@ -89,7 +89,8 @@ right: -50px;
   align-items: flex-end;
   gap: 8px;
   margin: 0;
-  z-index: 3;
+    z-index: 9999; /* اجعل الزر فوق كل العناصر الأخرى */
+
 }
 
 

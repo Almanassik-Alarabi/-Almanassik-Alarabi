@@ -231,7 +231,7 @@
           </a>
           <a href="offers.html" class="hero-btn green-btn">
             <i class="fas fa-kaaba"></i>
-            <span id="tripsBtnText">تصفح الرحلات</span>
+            <span id="tripsBtnText">استلم هديتك واعتمر</span>
           </a>
         </div>
       </div>
@@ -320,7 +320,13 @@
         var goldBtn = document.getElementById('goldBtnText');
         if (goldBtn) goldBtn.textContent = t.goldBtnText || '';
         var tripsBtn = document.getElementById('tripsBtnText');
-        if (tripsBtn) tripsBtn.textContent = t.tripsBtnText || '';
+        if (tripsBtn) {
+          if (lang === 'fr') {
+            tripsBtn.textContent = 'Recevez votre cadeau et partez en Omra';
+          } else {
+            tripsBtn.textContent = 'استلم هديتك واعتمر';
+          }
+        }
         document.getElementById('storyTitle').textContent = t.storyTitle;
         document.getElementById('storyContent').textContent = t.storyContent;
         document.getElementById('featuresTitle').textContent = t.featuresTitle;
