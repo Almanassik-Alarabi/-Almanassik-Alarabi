@@ -173,7 +173,7 @@ async function loadAgenciesForSelect() {
     'Authorization': 'Bearer ' + token.trim()
   };
   try {
-    const response = await fetch('https://almanassik-alarabi-server-v-01.onrender.com/api/admin/agencies/all', {
+    const response = await fetch('http://192.168.100.23:3001/api/admin/agencies/all', {
       headers
     });
     if (response.status === 401) {
@@ -219,7 +219,7 @@ async function loadOffersForAgency(agencyId) {
     'Authorization': 'Bearer ' + token.trim()
   };
   try {
-    const response = await fetch('https://almanassik-alarabi-server-v-01.onrender.com/api/admin/offers/all', {
+    const response = await fetch(`http://192.168.100.23:3001/api/admin/bookings/offers/${agencyId}`, {
       headers
     });
     if (response.status === 401) {
@@ -309,7 +309,7 @@ async function handleAddBookingFormSubmit(e) {
     return;
   }
   try {
-    const response = await fetch('https://almanassik-alarabi-server-v-01.onrender.com/api/admin/bookings/add', {
+    const response = await fetch('http://192.168.100.23:3001/api/admin/bookings/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -347,8 +347,11 @@ async function uploadPassportImage(file) {
   const formData = new FormData();
   formData.append('passport', file);
   try {
-    const response = await fetch('https://almanassik-alarabi-server-v-01.onrender.com/api/admin/bookings/upload/passport', {
+    const response = await fetch('http://192.168.100.23:3001/api/admin/bookings/upload/passport', {
       method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token.trim()
+      },
       body: formData
     });
     const data = await response.json();
@@ -375,7 +378,7 @@ async function getOrdersData() {
     return [];
   }
   try {
-    const response = await fetch('https://almanassik-alarabi-server-v-01.onrender.com/api/bookings/all', {
+    const response = await fetch('http://192.168.100.23:3001/api/bookings/all', {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token.trim()
@@ -401,7 +404,6 @@ async function getOrdersData() {
 
 async function renderOrdersTable() {
   var orders = await getOrdersData();
-  window.orders = orders;
   // فلترة حسب الحالة
   var status = document.getElementById('statusFilter').value;
   var search = document.getElementById('searchRequests').value.trim().toLowerCase();
@@ -412,21 +414,13 @@ async function renderOrdersTable() {
   }
   if (search) {
     orders = orders.filter(function(order) {
-      // بحث بالاسم مع تجاهل المسافات الزائدة والهمزات والرموز
-      function normalize(str) {
-        return (str || '')
-          .replace(/[\s\-_'"،.]/g, '')
-          .replace(/[إأآا]/g, 'ا')
-          .replace(/[يى]/g, 'ي')
-          .replace(/[ةه]/g, 'ه')
-          .toLowerCase();
+      // إذا كان البحث كله أرقام، ابحث في رقم الهاتف فقط
+      if (/^\d+$/.test(search)) {
+        return order.phone && order.phone.replace(/\D/g, '').includes(search);
+      } else {
+        // بحث نصي في الاسم (بدون تطبيع معقد)
+        return order.full_name && order.full_name.toLowerCase().includes(search);
       }
-      var name = normalize(order.full_name);
-      var searchName = normalize(search);
-      return (
-        (name && name.includes(searchName)) ||
-        (order.phone && order.phone.replace(/\D/g, '').includes(search.replace(/\D/g, '')))
-      );
     });
   }
   // ترتيب الطلبات: قيد الانتظار أولاً، ثم بانتظار موافقة الوكالة، ثم البقية إذا لم يكن هناك فلترة أو بحث
@@ -515,7 +509,7 @@ function addOrderActions() {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
         try {
           const token = localStorage.getItem('umrah_admin_token');
-          const response = await fetch(`https://almanassik-alarabi-server-v-01.onrender.com/api/bookings/approve-by-admin/${bookingId}`, {
+          const response = await fetch(`http://192.168.100.23:3001/api/bookings/approve-by-admin/${bookingId}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -549,7 +543,7 @@ function addOrderActions() {
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       try {
         const token = localStorage.getItem('umrah_admin_token');
-        const response = await fetch(`https://almanassik-alarabi-server-v-01.onrender.com/api/bookings/reject/${bookingId}`, {
+        const response = await fetch(`http://192.168.100.23:3001/api/bookings/reject/${bookingId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -587,39 +581,6 @@ function addOrderActions() {
         created_at: tds[4]?.textContent || '',
         passport_image_url: passportImageUrl
       };
-      // استخراج نوع الرحلة من بيانات الطلب
-      let roomType = '';
-      // إذا كان لديك نافذة orders في الجافاسكريبت، جلب الطلب منها
-      if (window.orders && Array.isArray(window.orders)) {
-        const orderObj = window.orders.find(o => o.id == bookingId);
-        if (orderObj && orderObj.room_type) roomType = orderObj.room_type;
-      }
-      // إذا لم يكن موجوداً، يمكن محاولة جلبه من tr.dataset.roomType إذا أضفته سابقاً
-      if (!roomType && tr.dataset.roomType) {
-        roomType = tr.dataset.roomType;
-      }
-      // ترجمة نوع الرحلة
-      let roomTypeText = '';
-      switch (roomType) {
-        case 'ثنائي':
-        case 'double':
-          roomTypeText = 'ثنائي';
-          break;
-        case 'ثلاثي':
-        case 'triple':
-          roomTypeText = 'ثلاثي';
-          break;
-        case 'رباعي':
-        case 'quad':
-          roomTypeText = 'رباعي';
-          break;
-        case 'خماسي':
-        case 'quint':
-          roomTypeText = 'خماسي';
-          break;
-        default:
-          roomTypeText = roomType || 'غير محدد';
-      }
       // بناء محتوى التفاصيل
       const html = `
         <div style="display:flex;flex-direction:row;gap:24px;direction:rtl;text-align:right;padding:18px 10px 10px 10px;min-width:420px;max-width:700px;align-items:flex-start;">
@@ -630,7 +591,6 @@ function addOrderActions() {
             <div><b>الوكالة:</b> ${details.agency_name}</div>
             <div><b>العرض:</b> ${details.offer_title}</div>
             <div><b>تاريخ الطلب:</b> ${details.created_at}</div>
-            <div><b>نوع الرحلة:</b> ${roomTypeText}</div>
           </div>
           ${details.passport_image_url ? `<div style='flex:1;min-width:220px;max-width:340px;'><b>صورة الجواز:</b><br><img src='${details.passport_image_url}' alt='صورة الجواز' style='width:100%;max-width:320px;max-height:420px;object-fit:contain;border:2px solid #176a3d;border-radius:10px;box-shadow:0 2px 8px #0002;margin-top:6px;'></div>` : ''}
         </div>
