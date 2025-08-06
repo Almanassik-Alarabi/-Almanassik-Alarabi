@@ -36,10 +36,6 @@ async function fetchOfferDetails() {
                 <div class="offer-image" id="offer-image-container">
                     <img src="${offer.main_image}" alt="${t.mainImageAlt || 'صورة العرض الرئيسية'}" id="offer-main-image" style="cursor:zoom-in;">
                 </div>
-                <!-- صورة العرض المكبرة (تظهر عند الضغط) -->
-                <div id="offer-image-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;">
-                  <img id="offer-image-modal-img" src="${offer.main_image}" alt="${t.mainImageAlt || 'صورة العرض الرئيسية'}" style="max-width:90vw;max-height:90vh;border-radius:12px;box-shadow:0 0 24px #000;cursor:zoom-out;">
-                </div>
                 <div class="offer-details">
                     <div class="detail-item"><span class="detail-label">📅 ${t.departureDate || 'تاريخ الرحلة'}</span><span class="detail-value">${offer.departure_date}</span></div>
                     <div class="detail-item"><span class="detail-label">🏠 ${t.returnDate || 'تاريخ العودة'}</span><span class="detail-value">${offer.return_date}</span></div>
@@ -109,10 +105,15 @@ async function fetchOfferDetails() {
                     <input type="text" name="phone" placeholder="${t.phone || 'رقم الهاتف'}" required style="width:100%;margin-bottom:10px;padding:8px;border-radius:6px;border:1px solid #ccc;">
 
                     <div id="passport-image-preview" style="margin-top:10px;">
-                        <p>${t.passportImage || 'صورة جواز السفر'} :</p>
+                    <p>${t.passportImage || 'صورة جواز السفر'} :</p>
                         <input type="file" id="passport-image-input" accept="image/*" placeholder="${t.passportImage || 'صورة جواز السفر'}" required style="width:100%;margin-bottom:10px;">
                     </div>
-                    <button type="submit" class="cta-button" style="width:100%;margin-top:10px;">${t.confirmBooking || 'تأكيد الحجز'}</button>
+                    <div id="captcha-box" style="margin:10px 0;">
+                        <label id="captcha-label" style="font-weight:bold;color:#1976d2;"></label>
+                        <input type="text" id="captcha-input" placeholder="أدخل الناتج" required style="width:100%;margin-bottom:10px;padding:8px;border-radius:6px;border:1px solid #ccc;">
+                        <div id="captcha-error" style="color:red;font-size:0.95em;"></div>
+                    </div>
+                    <button type="submit" class="cta-button" style="width:100%;margin-top:10px;">${t.confirmBooking || 'تأكيد طلب الحجز'}</button>
                     <div id="form-total-price" style="margin-top:10px;font-size:1.2em;color:#2d5a2d;"></div>
                 </form>
                 <div id="booking-result" style="margin-top:15px;"></div>
@@ -122,30 +123,47 @@ async function fetchOfferDetails() {
                 <p style="font-size: 0.9em; margin-top: 10px;">${t.ayahRef || 'سورة الحج - آية 27'}</p>
             </div>
         `; // إغلاق القالب النصي هنا بشكل صحيح
+        // إضافة منطق تكبير الصورة بعد تحميل التفاصيل
+        setTimeout(() => {
+            const img = document.getElementById('offer-main-image');
+            if (!img) return;
+            let zoomed = false;
+            img.addEventListener('click', function() {
+                if (!zoomed) {
+                    img.style.position = 'fixed';
+                    img.style.top = '50%';
+                    img.style.left = '50%';
+                    img.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                    img.style.zIndex = '9999';
+                    img.style.boxShadow = '0 0 40px #0008';
+                    img.style.maxWidth = '90vw';
+                    img.style.maxHeight = '90vh';
+                    img.style.cursor = 'zoom-out';
+                    img.style.background = '#fff';
+                    document.body.style.overflow = 'hidden';
+                    zoomed = true;
+                } else {
+                    img.style.position = '';
+                    img.style.top = '';
+                    img.style.left = '';
+                    img.style.transform = '';
+                    img.style.zIndex = '';
+                    img.style.boxShadow = '';
+                    img.style.maxWidth = '';
+                    img.style.maxHeight = '';
+                    img.style.cursor = 'zoom-in';
+                    img.style.background = '';
+                    document.body.style.overflow = '';
+                    zoomed = false;
+                }
+            });
+        }, 100);
+        // تفعيل التفاعلات مباشرة بعد بناء التفاصيل
+        setupOfferInteractions();
         } catch (e) {
             document.getElementById('dynamic-offer-details').innerHTML = '<div style="color:red">حدث خطأ أثناء جلب التفاصيل: ' + e.message + '</div>';
             console.error('Fetch offer details error:', e);
         }
-        // إضافة منطق تكبير الصورة بعد تحميل التفاصيل
-        setTimeout(() => {
-            const mainImg = document.getElementById('offer-main-image');
-            const modal = document.getElementById('offer-image-modal');
-            const modalImg = document.getElementById('offer-image-modal-img');
-            if (mainImg && modal && modalImg) {
-                mainImg.addEventListener('click', function(e) {
-                    modal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                });
-                // إغلاق عند الضغط على الصورة المكبرة أو أي مكان في الخلفية
-                modal.addEventListener('click', function(e) {
-                    // إذا ضغط على الصورة أو على الخلفية
-                    modal.style.display = 'none';
-                    document.body.style.overflow = '';
-                });
-                // منع إغلاق عند الضغط داخل الصورة المكبرة (لو أردت فقط عند الخلفية أزل هذا التعليق)
-                // modalImg.addEventListener('click', function(e) { e.stopPropagation(); });
-            }
-        }, 100);
     }
 
 
@@ -214,23 +232,32 @@ function setupOfferInteractions() {
     const bookingForm = document.getElementById('booking-form');
     const bookingResult = document.getElementById('booking-result');
     const passportInput = document.getElementById('passport-image-input');
+    // كابتشا حسابية بسيطة
+    let captchaA = 0, captchaB = 0, captchaAnswer = 0;
+    function generateCaptcha() {
+        captchaA = Math.floor(Math.random() * 9) + 1;
+        captchaB = Math.floor(Math.random() * 9) + 1;
+        captchaAnswer = captchaA + captchaB;
+        const captchaLabel = document.getElementById('captcha-label');
+        if (captchaLabel) captchaLabel.textContent = `كم حاصل جمع ${captchaA} + ${captchaB}؟`;
+        const captchaInput = document.getElementById('captcha-input');
+        if (captchaInput) captchaInput.value = '';
+        const captchaError = document.getElementById('captcha-error');
+        if (captchaError) captchaError.textContent = '';
+    }
+    generateCaptcha();
+
     bookingForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        // تحقق من الكابتشا
-        const captchaDiv = document.getElementById('simple-captcha-container');
-        const captchaInput = document.getElementById('simple-captcha-answer');
+        const captchaInput = document.getElementById('captcha-input');
         const captchaError = document.getElementById('captcha-error');
-        if (captchaDiv && captchaInput) {
-            const correct = captchaDiv.dataset.captchaAnswer;
-            if (captchaInput.value.trim() !== correct) {
-                captchaError.textContent = 'الإجابة غير صحيحة. حاول مرة أخرى.';
-                captchaError.style.display = 'inline';
-                captchaInput.focus();
-                return;
-            } else {
-                captchaError.textContent = '';
-                captchaError.style.display = 'none';
-            }
+        if (!captchaInput || captchaInput.value.trim() === '' || parseInt(captchaInput.value, 10) !== captchaAnswer) {
+            if (captchaError) captchaError.textContent = 'يرجى حل العملية الحسابية بشكل صحيح للتحقق.';
+            generateCaptcha();
+            captchaInput && captchaInput.focus();
+            return;
+        } else {
+            if (captchaError) captchaError.textContent = '';
         }
         bookingResult.textContent = 'جاري إرسال الحجز...';
         const full_name = bookingForm.full_name.value;
@@ -274,19 +301,7 @@ function setupOfferInteractions() {
                 message += '</div>';
                 bookingResult.innerHTML = message;
                 bookingForm.reset();
-                // إعادة توليد كابتشا جديدة بعد نجاح الحجز
-                setTimeout(() => {
-                    if (captchaDiv) {
-                        captchaDiv.innerHTML = '';
-                        const a = Math.floor(Math.random() * 10) + 1;
-                        const b = Math.floor(Math.random() * 10) + 1;
-                        captchaDiv.innerHTML =
-                          '<span style="font-weight:bold;">' + a + ' + ' + b + ' = </span>' +
-                          '<input type="number" id="simple-captcha-answer" style="margin:0 8px;width:60px;text-align:center;" required placeholder="؟">' +
-                          '<span id="captcha-error" style="color:red;font-size:0.9em;display:none;margin-right:8px;"></span>';
-                        captchaDiv.dataset.captchaAnswer = (a + b).toString();
-                    }
-                }, 500);
+                generateCaptcha();
                 // تجهيز كائن الحجز بكافة الحقول المطلوبة
                 const booking = result.booking;
                 booking.offer_title = offer.title;
@@ -354,10 +369,7 @@ function injectDynamicStyles() {
 injectDynamicStyles();
 
 // بعد جلب التفاصيل، فعل التفاعلات
-window.addEventListener('DOMContentLoaded', () => {
-    // ننتظر قليلاً حتى يتم تحميل التفاصيل
-    setTimeout(setupOfferInteractions, 700);
-});
+// لم يعد هناك حاجة لاستدعاء setupOfferInteractions هنا لأننا نفعلها بعد بناء التفاصيل
 
 if (window.setLanguage) {
     const origSetLanguage = window.setLanguage;
