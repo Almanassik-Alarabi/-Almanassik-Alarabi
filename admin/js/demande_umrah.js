@@ -219,7 +219,7 @@ async function loadOffersForAgency(agencyId) {
     'Authorization': 'Bearer ' + token.trim()
   };
   try {
-    const response = await fetch('http://192.168.100.23:3001/api/offers/all', {
+    const response = await fetch('http://192.168.100.23:3001/api/admin/offers/all', {
       headers
     });
     if (response.status === 401) {
