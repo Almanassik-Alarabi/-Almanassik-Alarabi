@@ -263,7 +263,13 @@ async function loadAndRenderOffers() {
   }
 }
 
-// ...existing code...
+// --- أيقونات الخدمات المتاحة ---
+const SERVICE_ICONS = [
+  { key: 'التأشيرة', icon: 'fa-passport', color: '#176a3d' },
+  { key: 'الإرشاد', icon: 'fa-user-tie', color: '#34495e' },
+  { key: 'الإطعام', icon: 'fa-utensils', color: '#f7ca18' },
+  { key: 'النقل', icon: 'fa-bus', color: '#1e824c' },
+];
 
 // --- إدراج أيقونات الخدمات في نموذج إضافة عرض (تفاعلية وجميلة) ---
 document.addEventListener("DOMContentLoaded", function () {
