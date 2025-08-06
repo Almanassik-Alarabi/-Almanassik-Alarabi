@@ -128,33 +128,82 @@ async function fetchOfferDetails() {
             const img = document.getElementById('offer-main-image');
             if (!img) return;
             let zoomed = false;
-            img.addEventListener('click', function() {
+            let overlay = null;
+            let originalParent = img.parentNode;
+            let originalNext = img.nextSibling;
+
+            // تأثير تكبير عند المرور بالماوس
+            img.addEventListener('mouseenter', function () {
                 if (!zoomed) {
-                    img.style.position = 'fixed';
-                    img.style.top = '50%';
-                    img.style.left = '50%';
-                    img.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                    img.style.transition = 'transform 0.3s cubic-bezier(.4,2,.6,1), box-shadow 0.3s';
+                    img.style.transform = 'scale(1.08)';
+                    img.style.boxShadow = '0 4px 32px #0004';
+                }
+            });
+            img.addEventListener('mouseleave', function () {
+                if (!zoomed) {
+                    img.style.transform = '';
+                    img.style.boxShadow = '';
+                }
+            });
+
+            // عند الضغط تكبير حقيقي
+            img.addEventListener('click', function (e) {
+                if (!zoomed) {
+                    overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100vw';
+                    overlay.style.height = '100vh';
+                    overlay.style.background = 'rgba(0,0,0,0.8)';
+                    overlay.style.zIndex = '9998';
+                    overlay.style.display = 'flex';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.justifyContent = 'center';
+                    overlay.style.cursor = 'zoom-out';
+                    overlay.id = 'zoomed-offer-overlay';
+                    document.body.appendChild(overlay);
+                    img.style.transition = 'all 0.35s cubic-bezier(.4,2,.6,1)';
+                    img.style.position = 'relative';
                     img.style.zIndex = '9999';
-                    img.style.boxShadow = '0 0 40px #0008';
-                    img.style.maxWidth = '90vw';
-                    img.style.maxHeight = '90vh';
+                    img.style.boxShadow = '0 0 60px #000b';
+                    img.style.maxWidth = '92vw';
+                    img.style.maxHeight = '92vh';
+                    img.style.transform = 'scale(1.25)';
                     img.style.cursor = 'zoom-out';
                     img.style.background = '#fff';
+                    img.style.borderRadius = '10%';
                     document.body.style.overflow = 'hidden';
+                    overlay.appendChild(img);
                     zoomed = true;
+                    // عند الضغط على أي مكان من الشاشة أو الصورة
+                    overlay.addEventListener('click', function () {
+                        // إعادة الصورة لمكانها الأصلي
+                        if (originalNext && originalNext.parentNode) {
+                            originalParent.insertBefore(img, originalNext);
+                        } else {
+                            originalParent.appendChild(img);
+                        }
+                        img.style.position = '';
+                        img.style.zIndex = '';
+                        img.style.boxShadow = '';
+                        img.style.maxWidth = '';
+                        img.style.maxHeight = '';
+                        img.style.transform = '';
+                        img.style.cursor = 'zoom-in';
+                        img.style.background = '';
+                        img.style.transition = '';
+                        img.style.borderRadius = '';
+                        document.body.style.overflow = '';
+                        if (overlay && overlay.parentNode) {
+                            overlay.parentNode.removeChild(overlay);
+                        }
+                        zoomed = false;
+                    });
                 } else {
-                    img.style.position = '';
-                    img.style.top = '';
-                    img.style.left = '';
-                    img.style.transform = '';
-                    img.style.zIndex = '';
-                    img.style.boxShadow = '';
-                    img.style.maxWidth = '';
-                    img.style.maxHeight = '';
-                    img.style.cursor = 'zoom-in';
-                    img.style.background = '';
-                    document.body.style.overflow = '';
-                    zoomed = false;
+                    // إذا كان مكبر بالفعل وأراد تصغيرها بالضغط عليها
+                    if (overlay) overlay.click();
                 }
             });
         }, 100);
