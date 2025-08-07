@@ -17,6 +17,13 @@
   --input-border: #e5e9e5;
   --text-secondary: #7d8c7c;
 }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Cairo', sans-serif;
+  font-weight: bold;
+}
 
 /* ========== Layout ========== */
 body {
